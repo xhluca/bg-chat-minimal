@@ -27,7 +27,8 @@ Options:
 --start-url URL     Starting page (default: https://www.google.com)
 --api-key KEY       API key (default: EMPTY)
 --temperature 0.6   Sampling temperature
---viewport-size N   Browser viewport, square 1:1 (default: 720)
+--viewport-width N  Browser viewport width (default: 1024)
+--viewport-height N Browser viewport height (default: 720)
 --headless          Run browser without display
 ```
 
@@ -40,7 +41,8 @@ run_chat(
     base_url="https://your-vllm-endpoint.com/v1",
     model="your-model-name",
     start_url="https://www.google.com",
-    viewport_size=720,
+    viewport_width=1024,
+    viewport_height=720,
 )
 ```
 

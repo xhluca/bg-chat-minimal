@@ -1,7 +1,6 @@
 """CLI entry point for bg-chat."""
 
 import argparse
-import json
 
 from openai import OpenAI
 
@@ -28,7 +27,8 @@ def main():
     parser.add_argument("--max-tokens", type=int, default=4096, help="Max tokens per response")
     parser.add_argument("--max-steps", type=int, default=100, help="Max agent steps per user message")
     parser.add_argument("--headless", action="store_true", help="Run browser headless")
-    parser.add_argument("--viewport-size", type=int, default=720, help="Viewport size (square, 1:1)")
+    parser.add_argument("--viewport-width", type=int, default=1024, help="Viewport width in pixels")
+    parser.add_argument("--viewport-height", type=int, default=720, help="Viewport height in pixels")
 
     args = parser.parse_args()
 
@@ -48,7 +48,8 @@ def main():
         max_tokens=args.max_tokens,
         max_steps=args.max_steps,
         headless=args.headless,
-        viewport_size=args.viewport_size,
+        viewport_width=args.viewport_width,
+        viewport_height=args.viewport_height,
     )
 
 

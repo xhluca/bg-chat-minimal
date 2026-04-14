@@ -164,7 +164,8 @@ def run_chat(
     max_tokens: int = 4096,
     max_steps: int = 100,
     headless: bool = False,
-    viewport_size: int = 720,
+    viewport_width: int = 1024,
+    viewport_height: int = 720,
 ):
     """Run the interactive chat agent loop.
 
@@ -177,7 +178,8 @@ def run_chat(
         max_tokens: Max tokens per LLM response.
         max_steps: Maximum agent steps per user message.
         headless: Run browser in headless mode.
-        viewport_size: Browser viewport size (square, 1:1 ratio).
+        viewport_width: Browser viewport width in pixels.
+        viewport_height: Browser viewport height in pixels.
     """
     from . import _get_global_playwright
     from .chat import Chat
@@ -190,7 +192,7 @@ def run_chat(
     # Browser
     browser = pw.chromium.launch(headless=headless)
     context = browser.new_context(
-        viewport={"width": viewport_size, "height": viewport_size},
+        viewport={"width": viewport_width, "height": viewport_height},
     )
     page = context.new_page()
     page.goto(start_url)

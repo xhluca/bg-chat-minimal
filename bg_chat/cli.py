@@ -28,7 +28,7 @@ def main():
     parser.add_argument("--max-tokens", type=int, default=4096, help="Max tokens per response")
     parser.add_argument("--max-steps", type=int, default=100, help="Max agent steps per user message")
     parser.add_argument("--headless", action="store_true", help="Run browser headless")
-    parser.add_argument("--viewport-size", type=int, default=1024, help="Viewport size (square, 1:1)")
+    parser.add_argument("--viewport-size", type=int, default=720, help="Viewport size (square, 1:1)")
 
     args = parser.parse_args()
 

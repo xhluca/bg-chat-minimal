@@ -164,7 +164,7 @@ def run_chat(
     max_tokens: int = 4096,
     max_steps: int = 100,
     headless: bool = False,
-    viewport_size: int = 1024,
+    viewport_size: int = 720,
 ):
     """Run the interactive chat agent loop.
 

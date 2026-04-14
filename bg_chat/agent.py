@@ -280,6 +280,9 @@ def run_chat(
     client = OpenAI(base_url=base_url, api_key=api_key)
 
     # Browser
+    # Set Playwright's test ID attribute to "bid" (browsergym marks elements with bid="...")
+    pw.selectors.set_test_id_attribute("bid")
+
     browser = pw.chromium.launch(headless=headless)
     context = browser.new_context(
         viewport={"width": viewport_width, "height": viewport_height},

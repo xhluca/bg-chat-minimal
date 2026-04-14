@@ -181,6 +181,41 @@
         }
 
         .submit-button:hover { background: #2a4a7a; }
+
+        .control-buttons {
+            display: flex;
+            gap: 6px;
+        }
+
+        .control-btn {
+            padding: 10px 14px;
+            border: 1px solid #2a4a7a;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.15s;
+        }
+
+        .pause-btn {
+            background: #3a2a1a;
+            color: #f0b27a;
+            border-color: #5a3a1a;
+        }
+        .pause-btn:hover { background: #4a3a2a; }
+        .pause-btn.paused {
+            background: #1a3a2a;
+            color: #7dcea0;
+            border-color: #2a5a3a;
+        }
+        .pause-btn.paused:hover { background: #2a4a3a; }
+
+        .restart-btn {
+            background: #2a1a1a;
+            color: #f1948a;
+            border-color: #4a2a2a;
+        }
+        .restart-btn:hover { background: #3a2a2a; }
     </style>
 </head>
 
@@ -200,12 +235,41 @@
             <form id="chatForm">
                 <textarea class="input-box" id="inputBox" placeholder="Type a message..." rows="1"></textarea>
                 <button type="submit" class="submit-button">Send</button>
+                <div class="control-buttons">
+                    <button type="button" class="control-btn pause-btn" id="pauseBtn" onclick="togglePause()">Pause</button>
+                    <button type="button" class="control-btn restart-btn" id="restartBtn" onclick="doRestart()">Restart</button>
+                </div>
             </form>
         </div>
     </div>
 
     <script>
         var USER_MESSAGE_RECEIVED = false;
+        var AGENT_PAUSED = false;
+        var AGENT_RESTART = false;
+
+        function togglePause() {
+            AGENT_PAUSED = !AGENT_PAUSED;
+            const btn = document.getElementById('pauseBtn');
+            if (AGENT_PAUSED) {
+                btn.textContent = 'Resume';
+                btn.classList.add('paused');
+                addChatMessage('info', '', 'Agent paused.');
+            } else {
+                btn.textContent = 'Pause';
+                btn.classList.remove('paused');
+                addChatMessage('info', '', 'Agent resumed.');
+            }
+        }
+
+        function doRestart() {
+            AGENT_RESTART = true;
+            AGENT_PAUSED = false;
+            const btn = document.getElementById('pauseBtn');
+            btn.textContent = 'Pause';
+            btn.classList.remove('paused');
+            addChatMessage('info', '', 'Restarting agent...');
+        }
 
         function escapeHtml(s) {
             return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")

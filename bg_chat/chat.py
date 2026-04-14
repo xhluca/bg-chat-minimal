@@ -55,6 +55,24 @@ class Chat:
         self.page.wait_for_function("USER_MESSAGE_RECEIVED", polling=100, timeout=0)
         logger.info("Message received.")
 
+    @property
+    def is_paused(self) -> bool:
+        return self.page.evaluate("AGENT_PAUSED")
+
+    @property
+    def should_restart(self) -> bool:
+        return self.page.evaluate("AGENT_RESTART")
+
+    def clear_restart(self):
+        self.page.evaluate("AGENT_RESTART = false;")
+
+    def wait_while_paused(self):
+        """Block until the agent is unpaused."""
+        if self.is_paused:
+            logger.info("Agent paused, waiting for resume...")
+            self.page.wait_for_function("!AGENT_PAUSED", polling=200, timeout=0)
+            logger.info("Agent resumed.")
+
     def close(self):
         self.context.close()
         self.browser.close()

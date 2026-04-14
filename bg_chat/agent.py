@@ -313,6 +313,14 @@ def run_chat(
             last_action_error = None
 
             for step in range(max_steps):
+                # Check pause/restart
+                chat.wait_while_paused()
+                if chat.should_restart:
+                    chat.clear_restart()
+                    history_actions.clear()
+                    chat.add_message("info", "Agent restarted. Send a new message.")
+                    break
+
                 # 1. Observe (only current observation, not accumulated)
                 try:
                     obs = get_observation(page)

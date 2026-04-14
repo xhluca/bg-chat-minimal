@@ -124,6 +124,14 @@ def get_observation(page) -> str:
     return obs
 
 
+def parse_think(response: str) -> str | None:
+    """Extract the thinking block from the LLM response."""
+    match = re.search(r"<think>\s*(.*?)\s*</think>", response, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return None
+
+
 def parse_action(response: str) -> str | None:
     """Extract the action from the LLM response."""
     match = re.search(r"<action>\s*(.*?)\s*</action>", response, re.DOTALL)
@@ -248,6 +256,11 @@ def run_chat(
                     break
 
                 conversation.append({"role": "assistant", "content": reply})
+
+                # Show thinking
+                thought = parse_think(reply)
+                if thought:
+                    chat.add_message("info", f"Thought: {thought}")
 
                 # Parse and execute action
                 action_str = parse_action(reply)

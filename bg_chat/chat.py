@@ -16,7 +16,7 @@ CHATBOX_DIR = resources.files(chat_files)
 
 
 class Chat:
-    def __init__(self, headless: bool, chat_size=(500, 800), record_video_dir=None):
+    def __init__(self, headless: bool, chat_size=(400, 800), record_video_dir=None):
         self.messages = []
 
         pw: playwright.sync_api.Playwright = _get_global_playwright()
@@ -42,7 +42,7 @@ class Chat:
         self.messages.append({"role": "user", "timestamp": utc_time, "message": msg})
         return ["user", time.strftime("%H:%M", time.localtime(utc_time)), msg]
 
-    def add_message(self, role: Literal["user", "assistant", "info", "infeasible"], msg: str):
+    def add_message(self, role: Literal["user", "assistant", "info", "infeasible", "think"], msg: str):
         utc_time = time.time()
         if role in ("user", "assistant", "infeasible"):
             self.messages.append({"role": role, "timestamp": utc_time, "message": msg})

@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bg-chat-minimal"
+version = "0.1.0"
+description = "Minimal BrowserGym-based interactive chat mode for web agents"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dependencies = [
+    "playwright",
+    "openai",
+]
+
+[project.scripts]
+bg-chat = "bg_chat.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["bg_chat*"]
+
+[tool.setuptools.package-data]
+"bg_chat" = ["javascript/*.js", "chat_files/*.html"]

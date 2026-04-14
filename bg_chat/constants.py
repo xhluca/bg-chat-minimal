@@ -1,0 +1,3 @@
+BROWSERGYM_ID_ATTRIBUTE = "bid"
+BROWSERGYM_VISIBILITY_ATTRIBUTE = "browsergym_visibility_ratio"
+BROWSERGYM_SETOFMARKS_ATTRIBUTE = "browsergym_set_of_marks"

@@ -16,7 +16,7 @@ CHATBOX_DIR = resources.files(chat_files)
 
 
 class Chat:
-    def __init__(self, headless: bool, chat_size=(360, 800), record_video_dir=None):
+    def __init__(self, headless: bool, chat_size=(400, 800), record_video_dir=None):
         self.messages = []
 
         pw: playwright.sync_api.Playwright = _get_global_playwright()

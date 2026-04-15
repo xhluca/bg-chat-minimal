@@ -363,7 +363,12 @@ def run_chat(
                             stream=True,
                         )
                         reply = ""
+                        restarted = False
                         for chunk in stream:
+                            if chat.should_restart:
+                                restarted = True
+                                stream.close()
+                                break
                             delta = chunk.choices[0].delta
                             # Thinking tokens: "reasoning" (vLLM) or "reasoning_content" (llama.cpp)
                             reasoning = getattr(delta, "reasoning", None) or getattr(delta, "reasoning_content", None)
@@ -372,6 +377,8 @@ def run_chat(
                             if delta.content:
                                 reply += delta.content
                         chat.finalize_streaming_think()
+                        if restarted:
+                            break
                         messages.append({"role": "assistant", "content": reply})
                         ans_dict = parse_response(reply)
                         break
@@ -388,7 +395,12 @@ def run_chat(
                         break
 
                 if ans_dict is None:
-                    chat.add_message("info", "Failed to get valid response from LLM.")
+                    if chat.should_restart:
+                        chat.clear_restart()
+                        history_actions.clear()
+                        chat.add_message("info", "Agent restarted. Send a new message.")
+                    else:
+                        chat.add_message("info", "Failed to get valid response from LLM.")
                     break
 
                 # 4. Show action (thinking was already streamed above)

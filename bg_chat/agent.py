@@ -350,26 +350,39 @@ def run_chat(
 
                 chat.add_message("info", f"Step {step + 1}: thinking...")
 
-                # 3. LLM call with retry on parse errors (matching agentlab retry())
+                # 3. LLM call with streaming + retry on parse errors
                 ans_dict = None
                 for retry in range(max_retry):
                     try:
-                        response = client.chat.completions.create(
+                        chat.start_streaming_think()
+                        stream = client.chat.completions.create(
                             model=model,
                             messages=messages,
                             temperature=temperature,
-                            max_completion_tokens=max_tokens,
+                            max_tokens=max_tokens,
+                            stream=True,
                         )
-                        reply = response.choices[0].message.content
+                        reply = ""
+                        for chunk in stream:
+                            delta = chunk.choices[0].delta
+                            # Thinking tokens: "reasoning" (vLLM) or "reasoning_content" (llama.cpp)
+                            reasoning = getattr(delta, "reasoning", None) or getattr(delta, "reasoning_content", None)
+                            if reasoning:
+                                chat.append_streaming_token(reasoning)
+                            if delta.content:
+                                reply += delta.content
+                        chat.finalize_streaming_think()
                         messages.append({"role": "assistant", "content": reply})
                         ans_dict = parse_response(reply)
                         break
                     except ParseError as e:
+                        chat.finalize_streaming_think()
                         logger.info(f"Parse error (retry {retry + 1}/{max_retry}): {e}")
                         messages.append({"role": "assistant", "content": reply})
                         messages.append({"role": "user", "content": str(e)})
                         continue
                     except Exception as e:
+                        chat.finalize_streaming_think()
                         chat.add_message("info", f"LLM error: {e}")
                         logger.error(f"LLM error: {e}")
                         break
@@ -378,10 +391,7 @@ def run_chat(
                     chat.add_message("info", "Failed to get valid response from LLM.")
                     break
 
-                # 4. Show thinking and action
-                if ans_dict["think"]:
-                    chat.add_message("think", ans_dict["think"])
-
+                # 4. Show action (thinking was already streamed above)
                 action_str = ans_dict["action"]
                 chat.add_message("info", f"Action: {action_str}")
 

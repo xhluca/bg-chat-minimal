@@ -16,7 +16,7 @@ CHATBOX_DIR = resources.files(chat_files)
 
 
 class Chat:
-    def __init__(self, headless: bool, chat_size=(400, 800), record_video_dir=None):
+    def __init__(self, headless: bool, chat_size=(360, 800), record_video_dir=None):
         self.messages = []
 
         pw: playwright.sync_api.Playwright = _get_global_playwright()
@@ -48,6 +48,15 @@ class Chat:
             self.messages.append({"role": role, "timestamp": utc_time, "message": msg})
         timestamp = time.strftime("%H:%M:%S", time.localtime(utc_time))
         self.page.evaluate(f"addChatMessage({repr(role)}, {repr(timestamp)}, {repr(msg)});")
+
+    def start_streaming_think(self):
+        self.page.evaluate("startStreamingThink();")
+
+    def append_streaming_token(self, token: str):
+        self.page.evaluate(f"appendStreamingToken({repr(token)});")
+
+    def finalize_streaming_think(self):
+        self.page.evaluate("finalizeStreamingThink();")
 
     def wait_for_user_message(self):
         logger.info("Waiting for message from user...")

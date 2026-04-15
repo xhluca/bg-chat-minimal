@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bg-chat-minimal"
-version = "0.1.0"
+version = "0.2.0"
 description = "Minimal BrowserGym-based interactive chat mode for web agents"
 readme = "README.md"
 license = {text = "MIT"}

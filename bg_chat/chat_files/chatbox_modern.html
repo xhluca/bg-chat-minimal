@@ -84,6 +84,49 @@
             padding: 2px 12px;
         }
 
+        .think-entry.streaming {
+            background: #111d30;
+            border-left: 3px solid #3a7bd5;
+            color: #8ab4f0;
+        }
+
+        .think-entry.streaming summary {
+            cursor: pointer;
+            font-size: 12px;
+            color: #4a6a8a;
+            user-select: none;
+            outline: none;
+            padding: 2px 0;
+        }
+
+        .think-entry.streaming summary .token-count {
+            color: #3a7bd5;
+            font-weight: 600;
+        }
+
+        .think-entry.streaming summary .spinner {
+            display: inline-block;
+            animation: pulse 1s infinite;
+            margin-right: 4px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        .think-entry.streaming .stream-content {
+            margin-top: 6px;
+            white-space: pre-wrap;
+            font-size: 12px;
+            line-height: 1.5;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .think-entry.streaming .stream-content::-webkit-scrollbar { width: 4px; }
+        .think-entry.streaming .stream-content::-webkit-scrollbar-thumb { background: #2a3a5a; border-radius: 2px; }
+
         /* --- Bottom panel: chat (75% height) --- */
         #chatPanel {
             height: 75%;
@@ -349,6 +392,53 @@
             if (role === "user") {
                 USER_MESSAGE_RECEIVED = true;
             }
+        }
+
+        var _streamEntry = null;
+        var _streamTokenCount = 0;
+
+        function startStreamingThink() {
+            const thinkBody = document.getElementById('thinkBody');
+            _streamTokenCount = 0;
+
+            const entry = document.createElement('div');
+            entry.className = 'think-entry streaming';
+
+            const details = document.createElement('details');
+            details.open = false;
+
+            const summary = document.createElement('summary');
+            summary.innerHTML = '<span class="spinner">&#9679;</span> Thinking... <span class="token-count">0 tokens</span>';
+
+            const content = document.createElement('div');
+            content.className = 'stream-content';
+
+            details.appendChild(summary);
+            details.appendChild(content);
+            entry.appendChild(details);
+            thinkBody.appendChild(entry);
+            thinkBody.scrollTop = thinkBody.scrollHeight;
+
+            _streamEntry = { entry, summary, content, details };
+        }
+
+        function appendStreamingToken(token) {
+            if (!_streamEntry) return;
+            _streamTokenCount++;
+            _streamEntry.content.textContent += token;
+            _streamEntry.summary.innerHTML =
+                '<span class="spinner">&#9679;</span> Thinking... <span class="token-count">' + _streamTokenCount + ' tokens</span>';
+            if (_streamEntry.details.open) {
+                _streamEntry.content.scrollTop = _streamEntry.content.scrollHeight;
+            }
+            _streamEntry.entry.parentElement.scrollTop = _streamEntry.entry.parentElement.scrollHeight;
+        }
+
+        function finalizeStreamingThink() {
+            if (!_streamEntry) return;
+            _streamEntry.summary.innerHTML =
+                'Thought <span class="token-count">(' + _streamTokenCount + ' tokens)</span>';
+            _streamEntry = null;
         }
 
         if (typeof send_user_message !== 'function') {

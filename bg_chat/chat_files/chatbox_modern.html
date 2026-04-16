@@ -248,12 +248,12 @@
         }
         .pause-btn.paused:hover { background: #2a4a3a; }
 
-        .restart-btn {
+        .end-btn {
             background: #2a1a1a;
             color: #f1948a;
             border-color: #4a2a2a;
         }
-        .restart-btn:hover { background: #3a2a2a; }
+        .end-btn:hover { background: #3a2a2a; }
     </style>
 </head>
 
@@ -266,7 +266,7 @@
             <button type="submit" class="submit-button">Send</button>
             <div class="control-buttons">
                 <button type="button" class="control-btn pause-btn" id="pauseBtn" onclick="togglePause()">Pause</button>
-                <button type="button" class="control-btn restart-btn" id="restartBtn" onclick="doRestart()">Restart</button>
+                <button type="button" class="control-btn end-btn" id="endBtn" onclick="doEnd()">End</button>
             </div>
         </form>
     </div>
@@ -274,7 +274,7 @@
     <script>
         var USER_MESSAGE_RECEIVED = false;
         var AGENT_PAUSED = false;
-        var AGENT_RESTART = false;
+        var AGENT_END = false;
 
         const feed = document.getElementById('feed');
 
@@ -296,13 +296,10 @@
             }
         }
 
-        function doRestart() {
-            AGENT_RESTART = true;
+        function doEnd() {
+            AGENT_END = true;
             AGENT_PAUSED = false;
-            const btn = document.getElementById('pauseBtn');
-            btn.textContent = 'Pause';
-            btn.classList.remove('paused');
-            addChatMessage('info', '', 'Restarting agent...');
+            addChatMessage('info', '', 'Ending session...');
         }
 
         function escapeHtml(s) {

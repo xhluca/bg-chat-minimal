@@ -209,6 +209,11 @@ class ParseError(Exception):
     pass
 
 
+class SessionEnded(Exception):
+    """Raised when the user clicks End or closes the chat window."""
+    pass
+
+
 def parse_response(response: str) -> dict:
     """Parse LLM response, matching agentlab parse_html_tags_raise behavior."""
     action = parse_action(response)
@@ -301,9 +306,14 @@ def run_chat(
     print(f"Agent running. Browser at {start_url}, model: {model}")
     print("Waiting for your message in the chat window...")
 
+    def check_end():
+        if chat.should_end:
+            raise SessionEnded()
+
     try:
         while True:
             chat.wait_for_user_message()
+            check_end()
             user_msg = chat.messages[-1]["message"]
 
             if user_msg.strip().lower() in ("exit", "quit", "q"):
@@ -313,13 +323,8 @@ def run_chat(
             last_action_error = None
 
             for step in range(max_steps):
-                # Check pause/restart
                 chat.wait_while_paused()
-                if chat.should_restart:
-                    chat.clear_restart()
-                    history_actions.clear()
-                    chat.add_message("info", "Agent restarted. Send a new message.")
-                    break
+                check_end()
 
                 # 1. Observe (only current observation, not accumulated)
                 try:
@@ -363,11 +368,14 @@ def run_chat(
                             stream=True,
                         )
                         reply = ""
-                        restarted = False
+                        ended = False
                         for chunk in stream:
-                            if chat.should_restart:
-                                restarted = True
-                                stream.close()
+                            if chat.should_end:
+                                ended = True
+                                try:
+                                    stream.close()
+                                except Exception:
+                                    pass
                                 break
                             delta = chunk.choices[0].delta
                             # Thinking tokens: "reasoning" (vLLM) or "reasoning_content" (llama.cpp)
@@ -377,11 +385,13 @@ def run_chat(
                             if delta.content:
                                 reply += delta.content
                         chat.finalize_streaming_think()
-                        if restarted:
-                            break
+                        if ended:
+                            raise SessionEnded()
                         messages.append({"role": "assistant", "content": reply})
                         ans_dict = parse_response(reply)
                         break
+                    except SessionEnded:
+                        raise
                     except ParseError as e:
                         chat.finalize_streaming_think()
                         logger.info(f"Parse error (retry {retry + 1}/{max_retry}): {e}")
@@ -395,12 +405,7 @@ def run_chat(
                         break
 
                 if ans_dict is None:
-                    if chat.should_restart:
-                        chat.clear_restart()
-                        history_actions.clear()
-                        chat.add_message("info", "Agent restarted. Send a new message.")
-                    else:
-                        chat.add_message("info", "Failed to get valid response from LLM.")
+                    chat.add_message("info", "Failed to get valid response from LLM.")
                     break
 
                 # 4. Show action (thinking was already streamed above)
@@ -426,9 +431,15 @@ def run_chat(
                 if sent_message:
                     break
 
-    except KeyboardInterrupt:
-        print("\nInterrupted.")
+    except (KeyboardInterrupt, SessionEnded):
+        print("\nSession ended.")
     finally:
-        chat.close()
-        context.close()
-        browser.close()
+        try:
+            chat.close()
+        except Exception:
+            pass
+        try:
+            context.close()
+            browser.close()
+        except Exception:
+            pass

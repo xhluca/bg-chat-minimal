@@ -60,8 +60,14 @@ class Chat:
 
     def wait_for_user_message(self):
         logger.info("Waiting for message from user...")
-        self.page.evaluate("USER_MESSAGE_RECEIVED = false;")
-        self.page.wait_for_function("USER_MESSAGE_RECEIVED", polling=100, timeout=0)
+        try:
+            self.page.evaluate("USER_MESSAGE_RECEIVED = false;")
+            self.page.wait_for_function(
+                "USER_MESSAGE_RECEIVED || AGENT_END", polling=100, timeout=0,
+            )
+        except Exception:
+            # Page closed by user
+            return
         logger.info("Message received.")
 
     @property
@@ -69,11 +75,12 @@ class Chat:
         return self.page.evaluate("AGENT_PAUSED")
 
     @property
-    def should_restart(self) -> bool:
-        return self.page.evaluate("AGENT_RESTART")
-
-    def clear_restart(self):
-        self.page.evaluate("AGENT_RESTART = false;")
+    def should_end(self) -> bool:
+        try:
+            return self.page.evaluate("AGENT_END")
+        except Exception:
+            # Page closed by user — treat as end signal
+            return True
 
     def wait_while_paused(self):
         """Block until the agent is unpaused."""

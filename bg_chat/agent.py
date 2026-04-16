@@ -253,7 +253,7 @@ def execute_action(page, action_str: str, send_msg_to_user) -> bool:
 def run_chat(
     base_url: str,
     model: str,
-    start_url: str = "https://www.google.com",
+    start_url: str = "about:blank",
     api_key: str = "EMPTY",
     temperature: float = 0.6,
     max_tokens: int = 4096,

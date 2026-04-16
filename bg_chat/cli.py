@@ -21,7 +21,7 @@ def main():
     )
     parser.add_argument("--base-url", type=str, required=True, help="vLLM-compatible API endpoint")
     parser.add_argument("--model", type=str, default=None, help="Model name (auto-detected if omitted)")
-    parser.add_argument("--start-url", type=str, default="https://www.google.com", help="Starting URL")
+    parser.add_argument("--start-url", type=str, default="about:blank", help="Starting URL")
     parser.add_argument("--api-key", type=str, default="EMPTY", help="API key")
     parser.add_argument("--temperature", type=float, default=0.6, help="Sampling temperature")
     parser.add_argument("--max-tokens", type=int, default=4096, help="Max tokens per response")

@@ -24,7 +24,7 @@ Options:
 ```
 --base-url URL      vLLM-compatible API endpoint (required)
 --model NAME        Model name (auto-detected if omitted)
---start-url URL     Starting page (default: https://www.google.com)
+--start-url URL     Starting page (default: about:blank)
 --api-key KEY       API key (default: EMPTY)
 --temperature 0.6   Sampling temperature
 --viewport-width N  Browser viewport width (default: 1024)
@@ -45,6 +45,18 @@ run_chat(
     viewport_height=720,
 )
 ```
+
+## Example
+
+```bash
+bg-chat \
+  --base-url https://your-vllm-endpoint.com/v1 \
+  --start-url https://flights.google.com
+```
+
+Then in the chat panel:
+
+> show me the 3 cheapest flights from sf to rio for april 22-28 with 2 stops or less
 
 ## License
 

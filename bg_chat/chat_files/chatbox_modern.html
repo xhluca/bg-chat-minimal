@@ -18,139 +18,23 @@
             overflow: hidden;
         }
 
-        /* --- Top panel: thinking/debug (25% height) --- */
-        #thinkPanel {
-            height: 25%;
-            background: #0d1525;
-            border-bottom: 1px solid #1a2540;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        #thinkPanel .panel-header {
-            padding: 8px 16px;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: #4a6a8a;
-            background: #0b1220;
-            border-bottom: 1px solid #1a2540;
-            flex-shrink: 0;
-        }
-
-        #thinkBody {
+        #feed {
             flex: 1;
             overflow-y: auto;
-            padding: 10px 16px;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        #thinkBody::-webkit-scrollbar { width: 4px; }
-        #thinkBody::-webkit-scrollbar-thumb { background: #2a3a5a; border-radius: 2px; }
-
-        .think-entry {
-            margin-bottom: 10px;
-            padding: 8px 12px;
-            border-radius: 6px;
-        }
-
-        .think-entry.thought {
-            background: #111d30;
-            border-left: 3px solid #3a7bd5;
-            color: #8ab4f0;
-        }
-
-        .think-entry.action-info {
-            background: #11201a;
-            border-left: 3px solid #2ecc71;
-            color: #7dcea0;
-            font-family: 'SF Mono', 'Fira Code', monospace;
-            font-size: 12px;
-        }
-
-        .think-entry.error-info {
-            background: #201111;
-            border-left: 3px solid #e74c3c;
-            color: #f1948a;
-        }
-
-        .think-entry.step-info {
-            background: transparent;
-            border-left: none;
-            color: #4a5a7a;
-            font-size: 11px;
-            padding: 2px 12px;
-        }
-
-        .think-entry.streaming {
-            background: #111d30;
-            border-left: 3px solid #3a7bd5;
-            color: #8ab4f0;
-        }
-
-        .think-entry.streaming summary {
-            cursor: pointer;
-            font-size: 12px;
-            color: #4a6a8a;
-            user-select: none;
-            outline: none;
-            padding: 2px 0;
-        }
-
-        .think-entry.streaming summary .token-count {
-            color: #3a7bd5;
-            font-weight: 600;
-        }
-
-        .think-entry.streaming summary .spinner {
-            display: inline-block;
-            animation: pulse 1s infinite;
-            margin-right: 4px;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 1; }
-        }
-
-        .think-entry.streaming .stream-content {
-            margin-top: 6px;
-            white-space: pre-wrap;
-            font-size: 12px;
-            line-height: 1.5;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .think-entry.streaming .stream-content::-webkit-scrollbar { width: 4px; }
-        .think-entry.streaming .stream-content::-webkit-scrollbar-thumb { background: #2a3a5a; border-radius: 2px; }
-
-        /* --- Bottom panel: chat (75% height) --- */
-        #chatPanel {
-            height: 75%;
+            padding: 12px 14px;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            gap: 8px;
         }
 
-        #chatBody {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-        }
+        #feed::-webkit-scrollbar { width: 4px; }
+        #feed::-webkit-scrollbar-thumb { background: #2a3a5a; border-radius: 2px; }
 
-        #chatBody::-webkit-scrollbar { width: 4px; }
-        #chatBody::-webkit-scrollbar-thumb { background: #2a3a5a; border-radius: 2px; }
-
-        .spacer { flex: 1; }
-
+        /* User & assistant messages */
         .message {
-            margin-bottom: 12px;
-            max-width: 90%;
+            max-width: 92%;
+            display: flex;
+            flex-direction: column;
         }
 
         .message-label {
@@ -164,19 +48,128 @@
             font-size: 14px;
             line-height: 1.5;
             word-wrap: break-word;
+            padding: 8px 12px;
+            border-radius: 8px;
         }
 
-        .user-message { align-self: flex-end; text-align: right; }
+        .user-message { align-self: flex-end; align-items: flex-end; }
         .user-message .message-label { color: #3a9fbf; }
-        .user-message .message-text { color: #ffffff; }
+        .user-message .message-text {
+            color: #ffffff;
+            background: #1a3a5c;
+        }
 
-        .assistant-message { align-self: flex-start; }
+        .assistant-message { align-self: flex-start; align-items: flex-start; }
         .assistant-message .message-label { color: #2ecc71; }
-        .assistant-message .message-text { color: #7dcea0; }
+        .assistant-message .message-text {
+            color: #d4f0d4;
+            background: #11201a;
+            border-left: 3px solid #2ecc71;
+        }
 
-        .infeasible-message { align-self: flex-start; }
+        .infeasible-message { align-self: flex-start; align-items: flex-start; }
         .infeasible-message .message-label { color: #e67e22; }
-        .infeasible-message .message-text { color: #f0b27a; }
+        .infeasible-message .message-text {
+            color: #f0b27a;
+            background: #1f1611;
+            border-left: 3px solid #e67e22;
+        }
+
+        /* Agent intermediate entries (think / action / info) */
+        .entry {
+            font-size: 12px;
+            line-height: 1.4;
+            padding: 6px 10px;
+            border-radius: 6px;
+            max-width: 92%;
+            align-self: flex-start;
+        }
+
+        .entry.action {
+            background: #11201a;
+            border-left: 3px solid #2ecc71;
+            color: #7dcea0;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        .entry.error {
+            background: #201111;
+            border-left: 3px solid #e74c3c;
+            color: #f1948a;
+        }
+
+        .entry.step {
+            background: transparent;
+            border: none;
+            color: #4a5a7a;
+            font-size: 11px;
+            padding: 2px 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Streaming/finalized thinking */
+        .entry.think {
+            background: #111d30;
+            border-left: 3px solid #3a7bd5;
+            color: #8ab4f0;
+        }
+
+        .entry.think summary {
+            cursor: pointer;
+            font-size: 12px;
+            color: #4a6a8a;
+            user-select: none;
+            outline: none;
+            padding: 2px 0;
+            list-style: none;
+        }
+
+        .entry.think summary::-webkit-details-marker { display: none; }
+
+        .entry.think summary::before {
+            content: '▶';
+            display: inline-block;
+            font-size: 9px;
+            margin-right: 6px;
+            transition: transform 0.15s;
+        }
+
+        .entry.think details[open] > summary::before {
+            transform: rotate(90deg);
+        }
+
+        .entry.think summary .token-count {
+            color: #3a7bd5;
+            font-weight: 600;
+        }
+
+        .entry.think summary .spinner {
+            display: inline-block;
+            animation: pulse 1s infinite;
+            margin-right: 4px;
+            color: #3a7bd5;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        .entry.think .stream-content {
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid #1a2540;
+            white-space: pre-wrap;
+            font-size: 12px;
+            line-height: 1.5;
+            max-height: 300px;
+            overflow-y: auto;
+            color: #8ab4f0;
+        }
+
+        .entry.think .stream-content::-webkit-scrollbar { width: 4px; }
+        .entry.think .stream-content::-webkit-scrollbar-thumb { background: #2a3a5a; border-radius: 2px; }
 
         /* --- Input area --- */
         .chat-input-area {
@@ -190,10 +183,12 @@
             display: flex;
             gap: 8px;
             align-items: flex-end;
+            flex-wrap: wrap;
         }
 
         .input-box {
             flex: 1;
+            min-width: 150px;
             padding: 10px 14px;
             background: #141e33;
             color: #e0e0e0;
@@ -263,33 +258,29 @@
 </head>
 
 <body>
-    <!-- Top: Thinking/Debug panel -->
-    <div id="thinkPanel">
-        <div class="panel-header">Agent Reasoning</div>
-        <div id="thinkBody"></div>
-    </div>
+    <div id="feed"></div>
 
-    <!-- Bottom: Chat panel -->
-    <div id="chatPanel">
-        <div id="chatBody">
-            <div class="spacer"></div>
-        </div>
-        <div class="chat-input-area">
-            <form id="chatForm">
-                <textarea class="input-box" id="inputBox" placeholder="Type a message..." rows="1"></textarea>
-                <button type="submit" class="submit-button">Send</button>
-                <div class="control-buttons">
-                    <button type="button" class="control-btn pause-btn" id="pauseBtn" onclick="togglePause()">Pause</button>
-                    <button type="button" class="control-btn restart-btn" id="restartBtn" onclick="doRestart()">Restart</button>
-                </div>
-            </form>
-        </div>
+    <div class="chat-input-area">
+        <form id="chatForm">
+            <textarea class="input-box" id="inputBox" placeholder="Type a message..." rows="1"></textarea>
+            <button type="submit" class="submit-button">Send</button>
+            <div class="control-buttons">
+                <button type="button" class="control-btn pause-btn" id="pauseBtn" onclick="togglePause()">Pause</button>
+                <button type="button" class="control-btn restart-btn" id="restartBtn" onclick="doRestart()">Restart</button>
+            </div>
+        </form>
     </div>
 
     <script>
         var USER_MESSAGE_RECEIVED = false;
         var AGENT_PAUSED = false;
         var AGENT_RESTART = false;
+
+        const feed = document.getElementById('feed');
+
+        function scrollFeedToBottom() {
+            feed.scrollTop = feed.scrollHeight;
+        }
 
         function togglePause() {
             AGENT_PAUSED = !AGENT_PAUSED;
@@ -322,15 +313,15 @@
         function nl2br(s) { return s.replace(/\n/g, "<br>"); }
 
         function addChatMessage(role, timeString, msg) {
-            const chatBody = document.getElementById('chatBody');
-            const thinkBody = document.getElementById('thinkBody');
-
+            // Static thinking (legacy path, kept for completeness)
             if (role === "think") {
-                const entry = document.createElement('div');
-                entry.className = 'think-entry thought';
-                entry.innerHTML = nl2br(escapeHtml(msg));
-                thinkBody.appendChild(entry);
-                thinkBody.scrollTop = thinkBody.scrollHeight;
+                const entry = document.createElement('details');
+                entry.className = 'entry think';
+                entry.innerHTML =
+                    '<summary>Thought</summary>' +
+                    '<div class="stream-content">' + nl2br(escapeHtml(msg)) + '</div>';
+                feed.appendChild(entry);
+                scrollFeedToBottom();
                 return;
             }
 
@@ -338,15 +329,15 @@
                 const entry = document.createElement('div');
                 const lower = msg.toLowerCase();
                 if (lower.startsWith("action:")) {
-                    entry.className = 'think-entry action-info';
+                    entry.className = 'entry action';
                 } else if (lower.includes("error")) {
-                    entry.className = 'think-entry error-info';
+                    entry.className = 'entry error';
                 } else {
-                    entry.className = 'think-entry step-info';
+                    entry.className = 'entry step';
                 }
                 entry.innerHTML = nl2br(escapeHtml(msg));
-                thinkBody.appendChild(entry);
-                thinkBody.scrollTop = thinkBody.scrollHeight;
+                feed.appendChild(entry);
+                scrollFeedToBottom();
                 return;
             }
 
@@ -386,8 +377,8 @@
 
             container.appendChild(label);
             container.appendChild(text);
-            chatBody.appendChild(container);
-            chatBody.scrollTop = chatBody.scrollHeight;
+            feed.appendChild(container);
+            scrollFeedToBottom();
 
             if (role === "user") {
                 USER_MESSAGE_RECEIVED = true;
@@ -398,11 +389,10 @@
         var _streamTokenCount = 0;
 
         function startStreamingThink() {
-            const thinkBody = document.getElementById('thinkBody');
             _streamTokenCount = 0;
 
-            const entry = document.createElement('div');
-            entry.className = 'think-entry streaming';
+            const wrapper = document.createElement('div');
+            wrapper.className = 'entry think';
 
             const details = document.createElement('details');
             details.open = false;
@@ -415,11 +405,11 @@
 
             details.appendChild(summary);
             details.appendChild(content);
-            entry.appendChild(details);
-            thinkBody.appendChild(entry);
-            thinkBody.scrollTop = thinkBody.scrollHeight;
+            wrapper.appendChild(details);
+            feed.appendChild(wrapper);
+            scrollFeedToBottom();
 
-            _streamEntry = { entry, summary, content, details };
+            _streamEntry = { wrapper, summary, content, details };
         }
 
         function appendStreamingToken(token) {
@@ -431,7 +421,7 @@
             if (_streamEntry.details.open) {
                 _streamEntry.content.scrollTop = _streamEntry.content.scrollHeight;
             }
-            _streamEntry.entry.parentElement.scrollTop = _streamEntry.entry.parentElement.scrollHeight;
+            scrollFeedToBottom();
         }
 
         function finalizeStreamingThink() {

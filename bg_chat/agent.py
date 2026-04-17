@@ -284,20 +284,19 @@ def run_chat(
     pw = _get_global_playwright()
     client = OpenAI(base_url=base_url, api_key=api_key)
 
-    # Browser
     # Set Playwright's test ID attribute to "bid" (browsergym marks elements with bid="...")
     pw.selectors.set_test_id_attribute("bid")
 
-    browser = pw.chromium.launch(headless=headless)
-    context = browser.new_context(
-        viewport={"width": viewport_width, "height": viewport_height},
+    # Chat panel — owns the browser context (with extension loaded for the side panel).
+    chat = Chat(
+        headless=headless,
+        viewport_width=viewport_width,
+        viewport_height=viewport_height,
     )
-    page = context.new_page()
+    context = chat.context
+    page = chat.main_page
     page.goto(start_url)
     page.wait_for_load_state("domcontentloaded")
-
-    # Chat panel
-    chat = Chat(headless=headless)
     chat.add_message("info", f"Connected to model: {model}")
 
     action_description = describe_actions()
@@ -312,8 +311,9 @@ def run_chat(
 
     try:
         while True:
-            chat.wait_for_user_message()
-            check_end()
+            got_message = chat.wait_for_user_message()
+            if not got_message:
+                raise SessionEnded()
             user_msg = chat.messages[-1]["message"]
 
             if user_msg.strip().lower() in ("exit", "quit", "q"):
@@ -436,10 +436,5 @@ def run_chat(
     finally:
         try:
             chat.close()
-        except Exception:
-            pass
-        try:
-            context.close()
-            browser.close()
         except Exception:
             pass

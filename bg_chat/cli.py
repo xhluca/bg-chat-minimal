@@ -26,8 +26,16 @@ def main():
     parser.add_argument("--temperature", type=float, default=0.6, help="Sampling temperature")
     parser.add_argument("--max-tokens", type=int, default=4096, help="Max tokens per response")
     parser.add_argument("--max-steps", type=int, default=100, help="Max agent steps per user message")
+    parser.add_argument(
+        "--ui", type=str, default="window", choices=["overlay", "window"],
+        help="Chat UI: 'window' (chat in a separate Chromium window — default, recommended) "
+             "or 'overlay' (chat injected into the page via a Chrome extension; experimental, "
+             "may break on sites with strict CSP, custom layouts, or that conflict with the "
+             "injected DOM)",
+    )
     parser.add_argument("--headless", action="store_true", help="Run browser headless")
-    parser.add_argument("--viewport-width", type=int, default=1024, help="Viewport width in pixels")
+    parser.add_argument("--viewport-width", type=int, default=None,
+                        help="Viewport width in pixels (default: 1470 for overlay UI, 1070 for window UI)")
     parser.add_argument("--viewport-height", type=int, default=720, help="Viewport height in pixels")
 
     args = parser.parse_args()
@@ -50,6 +58,7 @@ def main():
         headless=args.headless,
         viewport_width=args.viewport_width,
         viewport_height=args.viewport_height,
+        ui=args.ui,
     )
 
 

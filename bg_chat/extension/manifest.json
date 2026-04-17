@@ -1,16 +1,42 @@
 {
-  "manifest_version": 2,
-  "name": "BG Chat Panel",
+  "manifest_version": 3,
+  "name": "BG Chat Overlay",
   "version": "1.0",
-  "description": "Chat panel for the bg-chat web agent",
-  "permissions": [],
+  "description": "Side-by-side chat overlay for the bg-chat web agent",
+  "permissions": ["scripting"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_title": "Toggle BG Chat",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
   "background": {
-    "scripts": ["background.js"],
-    "persistent": false
+    "service_worker": "background.js"
   },
-  "browser_action": {
-    "default_title": "Open BG Chat",
-    "default_popup": "sidepanel.html"
-  },
-  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "match_about_blank": true,
+      "match_origin_as_fallback": true,
+      "all_frames": false,
+      "js": ["overlay-loader.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["overlay-main.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

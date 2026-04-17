@@ -59,6 +59,13 @@ async ([parent_bid, bid_attr_name, tags_to_mark]) => {
     i = 0;
     while (i < elements.length) {
         const elem = elements[i];
+        // Skip the bg-chat overlay panel: don't mark it and don't descend into
+        // its shadow DOM, so the agent doesn't see its own chat UI as part of
+        // the page being interacted with.
+        if (elem && elem.id === "bg-chat-host") {
+            i++;
+            continue;
+        }
         // add shadowDOM elements to the elements array, in such a way that order is preserved
         // TODO: do we really need the order preserved?
         if (elem.shadowRoot !== null) {

@@ -7,7 +7,7 @@ import time
 from openai import OpenAI
 
 from .actions import describe_actions, click, fill, go_back, goto, keyboard_press, scroll
-from .observation import _pre_extract, _post_extract, extract_merged_axtree, extract_focused_element_bid
+from .observation import _pre_extract, _post_extract, extract_merged_axtree, extract_focused_element_bid, extract_screenshot_base64
 from .axtree import flatten_axtree_to_str
 
 logger = logging.getLogger(__name__)
@@ -107,7 +107,7 @@ If the same action keeps failing, try alternative approaches."""
 
 # --- Observation extraction ---
 
-def get_observation(page) -> dict:
+def get_observation(page, with_screenshot: bool = True, screenshot_crop_right: int = 0) -> dict:
     """Extract structured observation from page, matching agentlab format."""
     _pre_extract(page, lenient=True)
     try:
@@ -124,12 +124,20 @@ def get_observation(page) -> dict:
         remove_redundant_static_text=True,
     )
 
+    screenshot_b64 = None
+    if with_screenshot:
+        try:
+            screenshot_b64 = extract_screenshot_base64(page, exclude_right_px=screenshot_crop_right)
+        except Exception as e:
+            logger.warning(f"Screenshot capture failed: {e}")
+
     return {
         "url": page.url,
         "title": page.title(),
         "axtree_txt": axtree_txt,
         "focused_element_bid": focused,
         "last_action_error": None,
+        "screenshot_b64": screenshot_b64,
     }
 
 
@@ -265,9 +273,22 @@ def run_chat(
     max_steps: int = 100,
     max_retry: int = 4,
     headless: bool = False,
-    viewport_width: int = 1024,
+    viewport_width: int = None,
     viewport_height: int = 720,
+    ui: str = "window",
 ):
+    # UI-aware viewport default: overlay needs extra room for the chat panel,
+    # window mode does not.
+    if viewport_width is None:
+        viewport_width = 1470 if ui == "overlay" else 1070
+
+    if ui == "overlay":
+        print(
+            "WARNING: --ui overlay is experimental. The injected chat panel "
+            "may break on sites with strict CSP, conflict with custom page "
+            "layouts, or pollute the agent's DOM observations. If you hit "
+            "issues, switch to --ui window."
+        )
     """Run the interactive chat agent loop.
 
     Matches agentlab GenericAgent behavior:
@@ -279,7 +300,7 @@ def run_chat(
     - Chat messages with timestamps
     """
     from . import _get_global_playwright
-    from .chat import Chat
+    from .chat import make_chat
 
     pw = _get_global_playwright()
     client = OpenAI(base_url=base_url, api_key=api_key)
@@ -287,8 +308,9 @@ def run_chat(
     # Set Playwright's test ID attribute to "bid" (browsergym marks elements with bid="...")
     pw.selectors.set_test_id_attribute("bid")
 
-    # Chat panel — owns the browser context (with extension loaded for the side panel).
-    chat = Chat(
+    # Chat panel — UI mode picks overlay (extension) or window (separate browser).
+    chat = make_chat(
+        ui=ui,
         headless=headless,
         viewport_width=viewport_width,
         viewport_height=viewport_height,
@@ -297,6 +319,7 @@ def run_chat(
     page = chat.main_page
     page.goto(start_url)
     page.wait_for_load_state("domcontentloaded")
+    chat.wait_for_overlay(timeout_s=10)
     chat.add_message("info", f"Connected to model: {model}")
 
     action_description = describe_actions()
@@ -328,7 +351,10 @@ def run_chat(
 
                 # 1. Observe (only current observation, not accumulated)
                 try:
-                    obs = get_observation(page)
+                    obs = get_observation(
+                        page,
+                        screenshot_crop_right=getattr(chat, "screenshot_crop_right", 0),
+                    )
                 except Exception as e:
                     obs = {
                         "url": page.url,
@@ -348,9 +374,21 @@ def run_chat(
                     action_description=action_description,
                 )
 
+                if obs.get("screenshot_b64"):
+                    user_content = [
+                        {"type": "text", "text": human_msg},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{obs['screenshot_b64']}"
+                            },
+                        },
+                    ]
+                else:
+                    user_content = human_msg
                 messages = [
                     {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user", "content": human_msg},
+                    {"role": "user", "content": user_content},
                 ]
 
                 chat.add_message("info", f"Step {step + 1}: thinking...")
@@ -366,9 +404,11 @@ def run_chat(
                             temperature=temperature,
                             max_tokens=max_tokens,
                             stream=True,
+                            stream_options={"include_usage": True},
                         )
                         reply = ""
                         ended = False
+                        usage = None
                         for chunk in stream:
                             if chat.should_end:
                                 ended = True
@@ -377,6 +417,10 @@ def run_chat(
                                 except Exception:
                                     pass
                                 break
+                            if getattr(chunk, "usage", None):
+                                usage = chunk.usage
+                            if not chunk.choices:
+                                continue
                             delta = chunk.choices[0].delta
                             # Thinking tokens: "reasoning" (vLLM) or "reasoning_content" (llama.cpp)
                             reasoning = getattr(delta, "reasoning", None) or getattr(delta, "reasoning_content", None)
@@ -387,6 +431,11 @@ def run_chat(
                         chat.finalize_streaming_think()
                         if ended:
                             raise SessionEnded()
+                        if usage:
+                            chat.add_message(
+                                "info",
+                                f"Tokens: {usage.prompt_tokens} in / {usage.completion_tokens} out",
+                            )
                         messages.append({"role": "assistant", "content": reply})
                         ans_dict = parse_response(reply)
                         break

@@ -67,8 +67,18 @@ def _post_extract(page: playwright.sync_api.Page):
                 raise
 
 
-def extract_screenshot_base64(page: playwright.sync_api.Page) -> str:
-    """Capture a PNG screenshot and return it as a base64 string."""
+def extract_screenshot_base64(page: playwright.sync_api.Page, exclude_right_px: int = 0) -> str:
+    """Capture a PNG screenshot and return it as a base64 string. If
+    ``exclude_right_px`` is set, crop that many pixels from the right side
+    (used to omit the bg-chat overlay panel from screenshots fed to the model)."""
+    if exclude_right_px > 0:
+        viewport = page.viewport_size or {"width": 1280, "height": 720}
+        width = max(1, viewport["width"] - exclude_right_px)
+        img_bytes = page.screenshot(
+            clip={"x": 0, "y": 0, "width": width, "height": viewport["height"]},
+            type="png",
+        )
+        return base64.b64encode(img_bytes).decode()
     cdp = page.context.new_cdp_session(page)
     result = cdp.send("Page.captureScreenshot", {"format": "png"})
     cdp.detach()

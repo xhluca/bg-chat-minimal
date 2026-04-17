@@ -1,3 +1,7 @@
-// Manifest V2 background script. The chat UI lives at sidepanel.html and is
-// opened as a tab by the Python launcher (so Playwright can evaluate scripts
-// against it). The browser action button serves as a manual fallback.
+// Toggle the chat panel when the user clicks the extension icon.
+chrome.action.onClicked.addListener((tab) => {
+    if (!tab || !tab.id) return;
+    chrome.tabs.sendMessage(tab.id, { type: "bg-chat-toggle" }).catch(() => {
+        // Content script may not be loaded on chrome:// pages, etc.
+    });
+});

@@ -21,4 +21,4 @@ bg-chat = "bg_chat.cli:main"
 include = ["bg_chat*"]
 
 [tool.setuptools.package-data]
-"bg_chat" = ["javascript/*.js", "extension/*"]
+"bg_chat" = ["javascript/*.js", "extension/*", "extension/icons/*.png", "chat_files/*.html"]

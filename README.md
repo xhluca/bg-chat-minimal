@@ -46,17 +46,39 @@ run_chat(
 )
 ```
 
-## Example
+## Examples
+
+Run the agent against an A3-Qwen vLLM endpoint and try one of the prompts below.
+
+### Flights — `flights.google.com`
 
 ```bash
 bg-chat \
-  --base-url https://your-vllm-endpoint.com/v1 \
+  --base-url https://a3-qwen-vllm.mcgill-nlp.org/v1 \
   --start-url https://flights.google.com
 ```
 
-Then in the chat panel:
-
 > show me the 3 cheapest flights from sf to rio for april 22-28 with 2 stops or less
+
+### Hotels — `booking.com`
+
+```bash
+bg-chat \
+  --base-url https://a3-qwen-vllm.mcgill-nlp.org/v1 \
+  --start-url https://www.booking.com
+```
+
+> what are the 3 cheapest stays with rating of 8+ in Rio for april 22-28? focus on hotels with breakfast included
+
+### Restaurants — `resy.com`
+
+```bash
+bg-chat \
+  --base-url https://a3-qwen-vllm.mcgill-nlp.org/v1 \
+  --start-url https://resy.com
+```
+
+> find 3 highly-rated japanese restaurants in LA with availability for 2 people on April 23
 
 ## License
 
